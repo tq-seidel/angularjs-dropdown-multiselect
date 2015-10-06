@@ -27,8 +27,8 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<div ng-show="settings.enableSort" class="tqmultilistfilter btn-group"> \
                                  <button type="button" ng-click="sort()" ng-class="settings.buttonClasses">{{getButtonText()}}\
                                  <button class="" ng-class="settings.buttonClasses" data-ng-click="toggleDropdown()"> \
-                                    <span class="fa fa-caret-down" ng-hide="filteredSymbol"></span> \
-                                    <span class="fa fa-filter" ng-show="filteredSymbol"></span>\
+                                    <span class="fa fa-caret-down" ng-hide="settings.filteredSymbol"></span> \
+                                    <span class="fa fa-filter" ng-show="settings.filteredSymbol"></span>\
                                  </button>\
                                  </button> \
                                  \
@@ -38,7 +38,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 template += '<li ng-hide="!settings.showCheckAll || settings.selectionLimit > 0"><a data-ng-click="selectAll()"><span class="fa fa-check"></span>  {{texts.checkAll}}</a>';
                 template += '<li ng-show="settings.showUncheckAll"><a data-ng-click="deselectAll();"><span class="fa fa-times"></span>   {{texts.uncheckAll}}</a></li>';
                 template += '<li ng-hide="(!settings.showCheckAll || settings.selectionLimit > 0) && !settings.showUncheckAll" class="divider"></li>';
-                template += '<li ng-show="settings.enableSearch"><div class="dropdown-header"><input type="text" class="form-control" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
+                template += '<li ng-show="settings.enableSearch"><div class="dropdown-header"><input type="text" class="form-control" ng-class="settings.searchInputClasses" style="width: 100%;" ng-model="searchFilter" placeholder="{{texts.searchPlaceholder}}" /></li>';
                 template += '<li ng-show="settings.enableSearch" class="divider"></li>';
 
                 if (groups) {
@@ -102,12 +102,14 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     showUncheckAll: true,
                     closeOnSelect: false,
                     buttonClasses: 'btn btn-default',
+                    searchInputClasses: 'form-control',
                     closeOnDeselect: false,
                     groupBy: $attrs.groupBy || undefined,
                     groupByTextProvider: null,
                     smartButtonMaxItems: 0,
                     smartButtonTextConverter: angular.noop,
-                    enableSort: false
+                    enableSort: false,
+                    filterSymbol: false
                 };
 
                 $scope.texts = {
@@ -247,6 +249,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     });
                 };
 
+                $scope.sort = function () {
+                    $scope.externalEvents.onSort();
+                };
+
                 $scope.deselectAll = function (sendEvent) {
                     sendEvent = sendEvent || true;
 
@@ -297,6 +303,12 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 $scope.isChecked = function (id) {
                     if ($scope.singleSelection) {
                         return $scope.selectedModel !== null && angular.isDefined($scope.selectedModel[$scope.settings.idProp]) && $scope.selectedModel[$scope.settings.idProp] === getFindObj(id)[$scope.settings.idProp];
+                    }
+
+                    if ($scope.settings.filterSymbol && ($scope.selectedModel.length > 0 || (angular.isObject($scope.selectedModel) && _.keys($scope.selectedModel).length > 0))) {
+                        $scope.settings.filteredSymbol = true;
+                    } else {
+                        $scope.settings.filteredSymbol = false;
                     }
 
                     return _.findIndex($scope.selectedModel, getFindObj(id)) !== -1;
