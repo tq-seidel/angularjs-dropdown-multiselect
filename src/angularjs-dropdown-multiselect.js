@@ -96,6 +96,13 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
 						}
 					}
 				}
+				if ($scope.settings.enableSearch) {
+					if ($scope.open) {
+						setTimeout(function() {
+							angular.element($element)[0].querySelector('.searchField').focus();
+						}, 0);
+					}
+				}
 			};
 
 			$scope.checkboxClick = function($event, id) {
